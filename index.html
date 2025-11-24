@@ -1,158 +1,196 @@
-<!DOCTYPE html>
-<html>
+<!doctype html>
+<html lang="en">
 <head>
-<title>Birthday Surprise</title>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Birthday Surprise — Ash25</title>
+
+<!-- canvas-confetti CDN -->
+<script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
 
 <style>
-body {
-  text-align: center;
-  font-family: "Poppins", sans-serif;
-  background: linear-gradient(135deg, #ffdee9, #b5fffc);
-  height: 100vh;
-  padding: 40px;
-  overflow-x: hidden;
-}
-
-h2 {
-  font-size: 26px;
-  font-weight: 600;
-}
-
-input {
-  padding: 12px;
-  font-size: 20px;
-  width: 220px;
-  border-radius: 8px;
-  border: none;
-  outline: none;
-}
-
-button {
-  padding: 12px 22px;
-  font-size: 20px;
-  margin-top: 15px;
-  background: #ff4fa1;
-  border: none;
-  color: white;
-  border-radius: 8px;
-  font-weight: 600;
-  box-shadow: 0 0 15px #ff4fa1aa;
-  transition: 0.3s;
-}
-
-button:active {
-  transform: scale(0.95);
-}
-
-#msg {
-  margin-top: 35px;
-  font-size: 28px;
-  font-weight: bold;
-  display: none;
-  animation: fadeIn 1s ease forwards;
-}
-
-@keyframes fadeIn {
-  from { opacity: 0; transform: scale(0.8); }
-  to { opacity: 1; transform: scale(1); }
-}
-
-/* Confetti */
-.confetti {
-  width: 12px;
-  height: 12px;
-  position: fixed;
-  top: -20px;
-  animation: fall linear forwards;
-}
-
-@keyframes fall {
-  to {
-    transform: translateY(110vh) rotate(720deg);
-    opacity: 0;
+  :root{
+    --bg1: #ffefe9;
+    --bg2: #e6f7ff;
+    --accent: #ff4fa1;
+    --muted: #475569;
   }
-}
+  html,body{height:100%;margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto; -webkit-font-smoothing:antialiased}
+  body{
+    display:flex;align-items:center;justify-content:center;
+    background:linear-gradient(135deg,var(--bg1),var(--bg2));
+    padding:18px;
+  }
+  .card{
+    width:100%;max-width:760px;background:linear-gradient(180deg,#ffffffcc,#ffffff);border-radius:16px;padding:20px;
+    box-shadow:0 18px 40px rgba(20,30,60,0.12);text-align:center;
+  }
+  h1{margin:6px 0 8px;font-size:20px;color:#0f1724}
+  p.lead{margin:0 0 14px;color:var(--muted)}
+  input[type="text"]{
+    width:86%;max-width:420px;padding:12px 14px;border-radius:10px;border:1px solid #e6e9ef;font-size:17px;
+    outline:none;box-shadow:inset 0 -2px 0 rgba(0,0,0,0.03);
+  }
+  button.primary{
+    margin-top:12px;padding:12px 18px;border-radius:12px;border:0;background:linear-gradient(90deg,var(--accent),#7c4dff);
+    color:white;font-weight:600;font-size:16px;box-shadow:0 8px 20px rgba(124,77,255,0.18);
+  }
+  button.secondary{
+    margin-top:12px;padding:10px 14px;border-radius:10px;border:0;background:#fff;font-weight:600;font-size:15px;color:#374151;
+    box-shadow:0 6px 14px rgba(0,0,0,0.06);
+  }
+  #msg{margin-top:20px;opacity:0;transform:translateY(6px);transition:all .5s ease;text-align:center}
+  #msg.show{opacity:1;transform:translateY(0)}
+  #msg h2{margin:6px 0 4px;font-size:26px}
+  #msg p{margin:0;color:#334155}
+
+  /* full-screen confetti canvas */
+  #confetti-canvas{position:fixed;left:0;top:0;pointer-events:none;width:100%;height:100%;z-index:9999}
+  footer{margin-top:16px;color:#94a3b8;font-size:13px}
+  @media (max-width:420px){
+    input[type="text"]{width:100%}
+  }
 </style>
 </head>
-
 <body>
+  <div class="card" role="main" aria-labelledby="title">
+    <h1 id="title">A secret surprise — enter the code</h1>
+    <p class="lead">Type the secret code and tap <strong>Unlock</strong>. Hold phone naturally.</p>
 
-<h2>Enter the secret pattern 🎉</h2>
-<input id="pattern" placeholder="Example: 2580">
-<br>
-<button onclick="checkPattern()">Unlock</button>
+    <input id="codeInput" type="text" inputmode="text" autocomplete="off" placeholder="Enter secret code (e.g. Ash25)">
+    <br>
+    <button class="primary" id="unlockBtn">Unlock</button>
 
-<div id="msg"></div>
+    <div id="msg" aria-live="polite" role="status">
+      <h2 id="msgTitle">🎉 HAPPY BIRTHDAY — Ash! 🎉</h2>
+      <p id="msgBody">Wishing you a day filled with love, laughter and all your favourite things.</p>
+      <div style="margin-top:12px">
+        <button id="playBtn" class="secondary" style="display:none">🎵 Tap to play song</button>
+      </div>
+    </div>
 
-<!-- WORKING MP3 audio -->
-<audio id="music" src="https://cdn.pixabay.com/download/audio/2023/03/07/audio_f64737f55a.mp3?filename=birthday-14320.mp3"></audio>
+    <footer>Secret code: <strong>Ash25</strong> (you provided this)</footer>
+  </div>
+
+  <!-- confetti canvas -->
+  <canvas id="confetti-canvas"></canvas>
 
 <script>
-let confettiInterval;
+/* -------- CONFIG -------- */
+const SECRET = "Ash25"; // exact match (case-sensitive). Change if you want case-insensitive.
+/* ------------------------ */
 
-function checkPattern() {
-  const input = document.getElementById("pattern").value;
-  const secret = "2580";  // change this if you want
+const unlockBtn = document.getElementById('unlockBtn');
+const codeInput = document.getElementById('codeInput');
+const msg = document.getElementById('msg');
+const msgTitle = document.getElementById('msgTitle');
+const msgBody = document.getElementById('msgBody');
+const playBtn = document.getElementById('playBtn');
 
-  if (input === secret) {
-    showMessage();
-    startContinuousConfetti();
-    askToPlayMusic();
-  } else {
-    alert("❌ Wrong pattern! Try again.");
-  }
-}
+const canvas = document.getElementById('confetti-canvas');
+canvas.width = window.innerWidth;
+canvas.height = window.innerHeight;
 
-function showMessage() {
-  const msg = document.getElementById("msg");
-  msg.innerHTML = "🎉 Happy Birthday! 🎂<br>Wishing you joy, love & magic today 💖";
-  msg.style.display = "block";
-}
+window.addEventListener('resize', ()=> {
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+});
 
-function askToPlayMusic() {
-  alert("🔊 Tap OK to play the birthday song!");
-  playMusic();
-}
+// create Audio when needed (after gesture)
+let music = null;
+const AUDIO_URL = "https://docs.google.com/uc?export=download&id=1b_vxT_4l4fxdTXSQQW4mxh3mfIDky7RT";
 
-function playMusic() {
-  const music = document.getElementById("music");
-  music.play().catch(() => {
-    alert("👉 Tap anywhere on the screen to enable audio!");
-    document.body.addEventListener("click", () => music.play(), { once: true });
+/* -------- Canvas-Confetti wrapper using CDN library -------- */
+function fireRandomBurst(){
+  // random origin to spread confetti well across screen
+  confetti({
+    particleCount: 30,
+    startVelocity: 25,
+    spread: 60,
+    ticks: 120,
+    origin: { x: Math.random(), y: Math.random() * 0.3 }
   });
 }
 
-/* Continuous Confetti */
-function startContinuousConfetti() {
-  confettiInterval = setInterval(() => {
-    createConfetti();
-  }, 200); // creates confetti every 0.2s
+let confettiInterval = null;
+function startContinuousConfetti(){
+  if(confettiInterval) return;
+  // initial burst
+  fireRandomBurst();
+  // continuous small bursts
+  confettiInterval = setInterval(fireRandomBurst, 300); // every 300ms
+}
+function stopContinuousConfetti(){
+  if(confettiInterval){ clearInterval(confettiInterval); confettiInterval = null; }
 }
 
-function createConfetti() {
-  const c = document.createElement("div");
-  c.classList.add("confetti");
+/* -------- Unlock logic -------- */
+unlockBtn.addEventListener('click', async () => {
+  const val = codeInput.value.trim();
+  if(!val){
+    alert("Please enter the secret code.");
+    return;
+  }
 
-  // Random position, size, shape
-  c.style.left = Math.random() * 100 + "vw";
-  c.style.animationDuration = (3 + Math.random() * 2) + "s";
-  let size = Math.random() * 10 + 7;
-  c.style.width = size + "px";
-  c.style.height = size + "px";
+  // check code exactly (case-sensitive). If you want case-insensitive:
+  // if(val.toLowerCase() === SECRET.toLowerCase())
+  if(val === SECRET){
+    // reveal message and start confetti
+    msg.classList.add('show');
+    startContinuousConfetti();
 
-  // random shape: circle or square
-  c.style.borderRadius = Math.random() > 0.5 ? "50%" : "0%";
+    // create Audio object now (in user gesture)
+    if(!music){
+      try{
+        music = new Audio(AUDIO_URL);
+        music.loop = false;
+      }catch(e){
+        console.warn("Audio creation failed", e);
+      }
+    }
 
-  // random colors
-  const colors = ["#ff4fa1", "#ffd740", "#40c4ff", "#69f0ae", "#7c4dff"];
-  c.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+    // attempt to play immediately (this click is a user gesture)
+    if(music){
+      music.play().then(()=> {
+        // success: hide play button if visible
+        playBtn.style.display = 'none';
+      }).catch(()=> {
+        // blocked — show "Tap to play" button for user to allow sound
+        playBtn.style.display = 'inline-block';
+      });
+    } else {
+      // if audio couldn't be created, show play button as fallback
+      playBtn.style.display = 'inline-block';
+    }
 
-  document.body.appendChild(c);
+    // small haptic feedback if supported (mobile)
+    if(navigator.vibrate) navigator.vibrate(60);
+    // optionally disable the unlock button to prevent re-trigger
+    unlockBtn.disabled = true;
+    unlockBtn.style.opacity = 0.6;
+    codeInput.disabled = true;
+  } else {
+    // wrong code feedback
+    alert("Wrong code — try again!");
+    // small shake/vibrate
+    if(navigator.vibrate) navigator.vibrate([40,20,40]);
+  }
+});
 
-  // remove after falling
-  setTimeout(() => c.remove(), 5000);
-}
+// Play button fallback (single tap will start audio)
+playBtn.addEventListener('click', ()=>{
+  if(!music) music = new Audio(AUDIO_URL);
+  music.play().catch(()=> {
+    alert("Audio blocked — try tapping anywhere on the screen once and then press this button again.");
+  });
+});
+
+/* Optional: allow Enter key to submit on virtual keyboard */
+codeInput.addEventListener('keydown', (e)=>{
+  if(e.key === 'Enter'){
+    unlockBtn.click();
+  }
+});
 </script>
-
 </body>
 </html>
