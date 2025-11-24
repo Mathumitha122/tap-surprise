@@ -1,158 +1,171 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>Birthday Surprise — Ash25</title>
-
-<!-- canvas-confetti CDN -->
-<script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Birthday Surprise</title>
 
 <style>
-  :root{
-    --bg1: #ffe9f0;
-    --bg2: #e9f4ff;
-    --accent: #ff4fa1;
-  }
-  body{
-    margin:0;
-    font-family:system-ui;
-    background:linear-gradient(135deg,var(--bg1),var(--bg2));
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    height:100vh;
-    padding:18px;
-    overflow:hidden;
-  }
-  .card{
-    width:100%;
-    max-width:700px;
-    background:#ffffffdd;
-    backdrop-filter:blur(6px);
-    padding:22px;
-    border-radius:18px;
-    text-align:center;
-    box-shadow:0 20px 40px rgba(0,0,0,0.15);
-  }
-  h1{margin:0 0 6px;font-size:22px;color:#1b2330}
-  .lead{margin:0 0 14px;color:#4a5463}
-  input{
-    width:88%;max-width:380px;
-    padding:12px;
-    border-radius:10px;
-    border:1px solid #d3d8e0;
-    font-size:17px;
-    outline:none;
-  }
-  button{
-    margin-top:14px;
-    padding:12px 18px;
-    border-radius:12px;
-    border:0;
-    font-size:16px;
-    font-weight:600;
-    cursor:pointer;
-  }
-  .primary{background:linear-gradient(90deg,#ff4fa1,#7c4dff);color:#fff;}
-  .secondary{background:#ffffff;color:#444;box-shadow:0 4px 14px rgba(0,0,0,0.1);}
-  #msg{opacity:0;transform:translateY(10px);transition:.5s;margin-top:18px;}
-  #msg.show{opacity:1;transform:translateY(0);}
-  #msg h2{margin:6px 0 4px;font-size:26px}
-  #msg p{margin:0;color:#334155}
-  /* full-screen confetti canvas */
-  #confetti-canvas{position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:999;}
+    body {
+        font-family: "Poppins", sans-serif;
+        background: linear-gradient(135deg, #ffb4f6, #ffd7b5);
+        text-align: center;
+        padding: 40px 20px;
+        overflow-x: hidden;
+    }
+
+    h2 {
+        color: #fff;
+        font-size: 22px;
+    }
+
+    input {
+        padding: 12px;
+        width: 80%;
+        max-width: 260px;
+        border-radius: 10px;
+        border: none;
+        font-size: 16px;
+        outline: none;
+    }
+
+    button {
+        margin-top: 15px;
+        padding: 12px 20px;
+        background: #ff4ecb;
+        color: white;
+        border: none;
+        border-radius: 12px;
+        font-size: 16px;
+        cursor: pointer;
+    }
+
+    /* Envelope Section */
+    #envelopeArea {
+        display: none;
+        margin-top: 40px;
+    }
+
+    .envelope {
+        width: 180px;
+        height: 120px;
+        background: #ff8ed6;
+        margin: auto;
+        position: relative;
+        border-radius: 10px;
+        cursor: pointer;
+    }
+
+    /* Envelope Flap */
+    .flap {
+        width: 180px;
+        height: 90px;
+        background: #ffb0e8;
+        position: absolute;
+        top: -80px;
+        left: 0;
+        border-radius: 10px 10px 0 0;
+        transform-origin: bottom;
+        transform: rotateX(0deg);
+        transition: 0.6s ease;
+        z-index: 3;
+    }
+
+    /* Letter */
+    .letter {
+        width: 160px;
+        background: white;
+        padding: 15px;
+        border-radius: 10px;
+        box-shadow: 0 0 15px rgba(0,0,0,0.15);
+        position: absolute;
+        top: 20px;
+        left: 10px;
+        opacity: 0;
+        transform: translateY(30px);
+        transition: 0.7s ease;
+        z-index: 1;
+    }
+
+    .letter.show {
+        opacity: 1;
+        transform: translateY(-60px);
+    }
+
+    .title {
+        font-size: 20px;
+        font-weight: bold;
+        color: #ff28b4;
+        margin-bottom: 8px;
+    }
+
+    .msg {
+        font-size: 15px;
+        color: #444;
+        line-height: 1.5;
+    }
 </style>
 </head>
 
 <body>
-<canvas id="confetti-canvas"></canvas>
 
-<div class="card">
-  <h1>🔒 Enter the Secret Code</h1>
-  <p class="lead">Type the code & tap Unlock</p>
+<h2>Enter Secret Code 🎁</h2>
+<input id="codeInput" placeholder="Enter code…" />
+<button onclick="unlock()">Unlock</button>
 
-  <input id="codeInput" placeholder="Enter secret code (Ash25)">
-  <br>
-  <button class="primary" id="unlockBtn">Unlock</button>
+<div id="envelopeArea">
+    <div class="envelope" onclick="openEnvelope()">
+        <div class="flap" id="flap"></div>
 
-  <div id="msg">
-    <h2>🎉 HAPPY BIRTHDAY, ASH! 🎉</h2>
-    <p>Wishing you a day filled with love, laughter and all your favourite things. ♥️ 💖✨</p>
-    <button id="playBtn" class="secondary" style="display:none;margin-top:18px;">🎵 Tap to play music</button>
-  </div>
+        <div class="letter" id="letter">
+            <div class="title">💌 Happy Birthday 💌</div>
+            <div class="msg">
+                May your day be filled with magic, love and joy ✨<br>
+                You deserve all the happiness in the world 💕<br>
+                Sending a warm birthday hug! 🎀
+            </div>
+        </div>
+    </div>
 </div>
 
+<!-- Confetti -->
+<script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+
 <script>
-/* CONFIG */
-const SECRET = "Ash25";
-const AUDIO_URL = "https://voca.ro/17v6fmBtyoPp";
+function unlock() {
+    let val = document.getElementById("codeInput").value.trim();
+    if (val === "Ash25") {
+        document.getElementById("envelopeArea").style.display = "block";
 
-/* Confetti canvas */
-const canvas = document.getElementById("confetti-canvas");
-canvas.width = innerWidth;
-canvas.height = innerHeight;
-addEventListener("resize", () => {
-  canvas.width = innerWidth;
-  canvas.height = innerHeight;
-});
+        // continuous confetti
+        setInterval(() => {
+            confetti({
+                particleCount: 45,
+                spread: 70,
+                gravity: 0.7,
+                origin: { y: 0.1 }
+            });
+        }, 700);
 
-/* Continuous confetti */
-function burst(){
-  confetti({
-    particleCount: 30,
-    spread: 60,
-    origin: { x: Math.random(), y: Math.random() * 0.3 }
-  });
-}
-let confettiLoop=null;
-function startConfetti(){
-  burst();
-  confettiLoop = setInterval(burst, 300);
+    } else {
+        alert("Incorrect code ❌ Try again!");
+    }
 }
 
-/* Message + audio logic */
-const unlockBtn = document.getElementById("unlockBtn");
-const codeInput = document.getElementById("codeInput");
-const msg = document.getElementById("msg");
-const playBtn = document.getElementById("playBtn");
+let opened = false;
 
-let music = null;
+function openEnvelope() {
+    if (opened) return;
+    opened = true;
 
-unlockBtn.onclick = () => {
-  const val = codeInput.value.trim();
-  if(val !== SECRET){
-    alert("Wrong code!");
-    navigator.vibrate?.(60);
-    return;
-  }
+    // open flap
+    document.getElementById("flap").style.transform = "rotateX(-130deg)";
 
-  msg.classList.add("show");
-  startConfetti();
-  navigator.vibrate?.(40);
-
-  // create audio object inside user gesture
-  if(!music){
-    music = new Audio(AUDIO_URL);
-    music.loop = false;
-  }
-
-  // attempt to play immediately (this click counts as user gesture)
-  music.play().then(()=>{
-    playBtn.style.display = "none";
-  }).catch(()=>{
-    // fallback
-    playBtn.style.display = "inline-block";
-  });
-
-  unlockBtn.disabled = true;
-  codeInput.disabled = true;
-};
-
-/* Fallback play button */
-playBtn.onclick = () => {
-  if(music) music.play();
-};
+    // slide out letter
+    setTimeout(() => {
+        document.getElementById("letter").classList.add("show");
+    }, 400);
+}
 </script>
 
 </body>
