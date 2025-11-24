@@ -2,96 +2,141 @@
 <html>
 <head>
 <title>Birthday Surprise</title>
+
 <style>
 body {
   text-align: center;
-  font-family: Arial;
-  background: #fff7f7;
+  font-family: "Poppins", sans-serif;
+  background: linear-gradient(135deg, #ffdee9, #b5fffc);
+  height: 100vh;
   padding: 40px;
+  overflow-x: hidden;
+}
+
+h2 {
+  font-size: 26px;
+  font-weight: 600;
 }
 
 input {
-  padding: 10px;
-  font-size: 18px;
-  width: 200px;
-  text-align: center;
+  padding: 12px;
+  font-size: 20px;
+  width: 220px;
+  border-radius: 8px;
+  border: none;
+  outline: none;
 }
 
 button {
-  padding: 10px 20px;
-  font-size: 18px;
-  margin-top: 10px;
+  padding: 12px 22px;
+  font-size: 20px;
+  margin-top: 15px;
+  background: #ff4fa1;
+  border: none;
+  color: white;
+  border-radius: 8px;
+  font-weight: 600;
+  box-shadow: 0 0 15px #ff4fa1aa;
+  transition: 0.3s;
+}
+
+button:active {
+  transform: scale(0.95);
 }
 
 #msg {
-  margin-top: 30px;
-  font-size: 26px;
+  margin-top: 35px;
+  font-size: 28px;
   font-weight: bold;
   display: none;
+  animation: fadeIn 1s ease forwards;
 }
 
-.confetti-piece {
-  width: 10px;
-  height: 10px;
-  background-color: #ff4081;
+@keyframes fadeIn {
+  from { opacity: 0; transform: scale(0.8); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+/* Confetti */
+.confetti {
+  width: 12px;
+  height: 12px;
   position: fixed;
-  top: -10px;
-  animation: fall 3s linear forwards;
-  border-radius: 3px;
+  top: -20px;
+  animation: fall linear forwards;
+  border-radius: 50%;
 }
 
 @keyframes fall {
   to {
-    transform: translateY(100vh) rotate(720deg);
+    transform: translateY(110vh) rotate(720deg);
+    opacity: 0;
   }
 }
 </style>
 </head>
+
 <body>
 
 <h2>Enter the secret pattern 🎉</h2>
-
 <input id="pattern" placeholder="Example: 2580">
-
 <br>
 <button onclick="checkPattern()">Unlock</button>
 
 <div id="msg"></div>
 
+<!-- Background music -->
+<audio id="music" src="https://www2.cs.uic.edu/~i101/SoundFiles/HappyBirthday.mid"></audio>
+
 <script>
 function checkPattern() {
   const input = document.getElementById("pattern").value;
-  
-  // 🔥 Set your secret pattern here
-  const secret = "2580";
+  const secret = "2580";  // You can change it
 
   if (input === secret) {
     showMessage();
     startConfetti();
+    playMusic();
   } else {
-    alert("Wrong pattern! Try again.");
+    alert("❌ Wrong pattern! Try again.");
   }
 }
 
 function showMessage() {
   const msg = document.getElementById("msg");
-  msg.innerHTML = "🎉 Happy Birthday! 🎂<br>You mean the world to me 💖";
+  msg.innerHTML = "🎉 Happy Birthday! 🎂<br>Wishing you joy, love & magic today 💖";
   msg.style.display = "block";
 }
 
-function startConfetti() {
-  for (let i = 0; i < 40; i++) {
-    const c = document.createElement("div");
-    c.classList.add("confetti-piece");
-    c.style.left = Math.random() * 100 + "vw";
-    c.style.backgroundColor = randomColor();
-    document.body.appendChild(c);
-  }
+function playMusic() {
+  const music = document.getElementById("music");
+  music.play().catch(() => {
+    alert("🔊 Tap anywhere to enable sound!");
+  });
 }
 
-function randomColor() {
-  const colors = ["#ff4081", "#ffd740", "#40c4ff", "#69f0ae", "#7c4dff"];
-  return colors[Math.floor(Math.random() * colors.length)];
+function startConfetti() {
+  for (let i = 0; i < 60; i++) {
+    const c = document.createElement("div");
+    c.classList.add("confetti");
+
+    c.style.left = Math.random() * 100 + "vw";
+    c.style.animationDuration = (3 + Math.random() * 2) + "s";
+
+    // random shape
+    let size = Math.random() * 10 + 7;
+    c.style.width = size + "px";
+    c.style.height = size + "px";
+    c.style.borderRadius = Math.random() > 0.5 ? "50%" : "0%";
+
+    // random colors
+    const colors = ["#ff4fa1", "#ffd740", "#40c4ff", "#69f0ae", "#7c4dff"];
+    c.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+
+    document.body.appendChild(c);
+
+    setTimeout(() => c.remove(), 5000);
+  }
 }
 </script>
 
