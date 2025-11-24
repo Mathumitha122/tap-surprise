@@ -12,6 +12,7 @@
         text-align: center;
         background: linear-gradient(135deg, #ffb3da, #ffc8ec, #ffd6ef);
         min-height: 100vh;
+        overflow-x: hidden;
     }
 
     h1 {
@@ -40,112 +41,102 @@
         font-size: 18px;
         margin-top: 20px;
         cursor: pointer;
-        transition: 0.2s;
     }
 
     #envelopeContainer {
         display: none;
+        margin-top: 50px;
+        display: flex;
         justify-content: center;
-        margin-top: 40px;
     }
 
-    /* NEW — REAL ENVELOPE 💌 */
-    .envelope {
+    /* ENVELOPE STYLING */
+    .envelope-wrapper {
+        position: relative;
         width: 260px;
         height: 180px;
-        position: relative;
         cursor: pointer;
-        transform-style: preserve-3d;
     }
 
-    /* Bottom rectangle */
-    .env-body {
+    .envelope {
         width: 100%;
         height: 100%;
-        background: #ff9ccc;
+        background: #ff9acb;
         border-radius: 12px;
         position: absolute;
-        z-index: 1;
+        bottom: 0;
         overflow: hidden;
+        box-shadow: 0 8px 20px rgba(0,0,0,0.1);
     }
 
-    /* Left flap */
-    .left-flap {
+    .envelope:before {
+        content: "";
         position: absolute;
-        width: 0;
-        height: 0;
-        border-top: 90px solid transparent;
-        border-bottom: 90px solid transparent;
-        border-right: 130px solid #ff8ac9;
         top: 0;
         left: 0;
-        z-index: 2;
-    }
-
-    /* Right flap */
-    .right-flap {
-        position: absolute;
-        width: 0;
-        height: 0;
-        border-top: 90px solid transparent;
-        border-bottom: 90px solid transparent;
-        border-left: 130px solid #ff8ac9;
-        top: 0;
-        right: 0;
-        z-index: 2;
-    }
-
-    /* Top flap */
-    .top-flap {
         width: 0;
         height: 0;
         border-left: 130px solid transparent;
         border-right: 130px solid transparent;
-        border-bottom: 100px solid #ffa9d6;
-        position: absolute;
-        top: 0;
-        left: 0;
+        border-bottom: 110px solid #ffb6dd;
         transform-origin: top;
-        transition: transform 0.7s ease;
-        z-index: 3;
+        transition: 0.6s ease;
     }
 
-    /* Heart seal */
-    .heart {
-        font-size: 32px;
+    /* Heart Seal */
+    .seal {
         position: absolute;
-        top: 65px;
+        top: 55px;
         left: 50%;
         transform: translateX(-50%);
-        z-index: 4;
+        font-size: 34px;
+        transition: 0.5s ease;
     }
 
-    /* Letter inside */
+    /* Letter */
     .letter {
+        position: absolute;
         width: 85%;
-        height: 120px;
-        background: white;
+        left: 50%;
+        transform: translateX(-50%);
+        bottom: -130px;
+        height: 140px;
+        background: #fff;
         border-radius: 10px;
         padding: 15px;
         text-align: center;
-        font-size: 16px;
-        position: absolute;
-        left: 50%;
-        bottom: 0;
-        transform: translateX(-50%) translateY(40px);
-        opacity: 0;
-        transition: 0.8s;
-        z-index: 0;
+        font-size: 15px;
+        box-shadow: 0 6px 12px rgba(0,0,0,0.1);
+        transition: bottom 0.8s ease;
     }
 
-    /* OPEN ANIMATION */
-    .open .top-flap {
+    /* When opened */
+    .open .envelope:before {
         transform: rotateX(180deg);
     }
 
+    .open .seal {
+        opacity: 0;
+    }
+
     .open .letter {
-        transform: translateX(-50%) translateY(-40px);
-        opacity: 1;
+        bottom: 20px;
+    }
+
+    /* Confetti */
+    .confetti {
+        position: fixed;
+        top: -10px;
+        width: 10px;
+        height: 10px;
+        animation: fall linear infinite;
+        opacity: 0.8;
+    }
+
+    @keyframes fall {
+        to {
+            transform: translateY(120vh) rotate(360deg);
+        }
     }
 </style>
 </head>
@@ -153,25 +144,46 @@
 <body>
 
 <h1>Enter Secret Code 🎁</h1>
+
 <input id="secretCode" placeholder="Enter code">
+<br>
 <button id="unlockBtn">Unlock</button>
 
+<!-- Envelope -->
 <div id="envelopeContainer">
-    <div class="envelope" id="envelope">
-        <div class="env-body"></div>
-        <div class="left-flap"></div>
-        <div class="right-flap"></div>
-        <div class="top-flap"></div>
-        <div class="heart">❤️</div>
+    <div class="envelope-wrapper" id="envWrap">
+        <div class="envelope"></div>
+        <div class="seal">❤️</div>
 
         <div class="letter">
-            You deserve all the happiness in the world 💕<br>
-            Sending a warm birthday hug! 🎀
+            <p>
+                Happy Birthday! 🎀💖<br>
+                You deserve all the love, joy & smiles today!<br>
+                Enjoy your special day ✨💌
+            </p>
         </div>
     </div>
 </div>
 
 <script>
+/* CONFETTI */
+function createConfetti() {
+    const conf = document.createElement("div");
+    conf.classList.add("confetti");
+
+    const colors = ["#ff2ea6", "#ffa9d6", "#ff7ac8", "#ffcdf2", "#ffffff"];
+    conf.style.background = colors[Math.floor(Math.random() * colors.length)];
+
+    conf.style.left = Math.random() * window.innerWidth + "px";
+    conf.style.animationDuration = 3 + Math.random() * 2 + "s";
+
+    document.body.appendChild(conf);
+
+    setTimeout(() => conf.remove(), 5000);
+}
+setInterval(createConfetti, 130);
+
+/* Unlock */
 document.getElementById("unlockBtn").addEventListener("click", () => {
     const code = document.getElementById("secretCode").value;
 
@@ -183,8 +195,9 @@ document.getElementById("unlockBtn").addEventListener("click", () => {
     }
 });
 
-document.getElementById("envelope").addEventListener("click", () => {
-    document.getElementById("envelope").classList.toggle("open");
+/* Open envelope */
+document.getElementById("envWrap").addEventListener("click", () => {
+    document.getElementById("envWrap").classList.toggle("open");
 });
 </script>
 
