@@ -64,7 +64,6 @@ button:active {
   position: fixed;
   top: -20px;
   animation: fall linear forwards;
-  border-radius: 50%;
 }
 
 @keyframes fall {
@@ -85,18 +84,20 @@ button:active {
 
 <div id="msg"></div>
 
-<!-- Background music -->
-<audio id="music" src="https://www2.cs.uic.edu/~i101/SoundFiles/HappyBirthday.mid"></audio>
+<!-- WORKING MP3 audio -->
+<audio id="music" src="https://cdn.pixabay.com/download/audio/2023/03/07/audio_f64737f55a.mp3?filename=birthday-14320.mp3"></audio>
 
 <script>
+let confettiInterval;
+
 function checkPattern() {
   const input = document.getElementById("pattern").value;
-  const secret = "2580";  // You can change it
+  const secret = "2580";  // change this if you want
 
   if (input === secret) {
     showMessage();
-    startConfetti();
-    playMusic();
+    startContinuousConfetti();
+    askToPlayMusic();
   } else {
     alert("❌ Wrong pattern! Try again.");
   }
@@ -108,35 +109,48 @@ function showMessage() {
   msg.style.display = "block";
 }
 
+function askToPlayMusic() {
+  alert("🔊 Tap OK to play the birthday song!");
+  playMusic();
+}
+
 function playMusic() {
   const music = document.getElementById("music");
   music.play().catch(() => {
-    alert("🔊 Tap anywhere to enable sound!");
+    alert("👉 Tap anywhere on the screen to enable audio!");
+    document.body.addEventListener("click", () => music.play(), { once: true });
   });
 }
 
-function startConfetti() {
-  for (let i = 0; i < 60; i++) {
-    const c = document.createElement("div");
-    c.classList.add("confetti");
+/* Continuous Confetti */
+function startContinuousConfetti() {
+  confettiInterval = setInterval(() => {
+    createConfetti();
+  }, 200); // creates confetti every 0.2s
+}
 
-    c.style.left = Math.random() * 100 + "vw";
-    c.style.animationDuration = (3 + Math.random() * 2) + "s";
+function createConfetti() {
+  const c = document.createElement("div");
+  c.classList.add("confetti");
 
-    // random shape
-    let size = Math.random() * 10 + 7;
-    c.style.width = size + "px";
-    c.style.height = size + "px";
-    c.style.borderRadius = Math.random() > 0.5 ? "50%" : "0%";
+  // Random position, size, shape
+  c.style.left = Math.random() * 100 + "vw";
+  c.style.animationDuration = (3 + Math.random() * 2) + "s";
+  let size = Math.random() * 10 + 7;
+  c.style.width = size + "px";
+  c.style.height = size + "px";
 
-    // random colors
-    const colors = ["#ff4fa1", "#ffd740", "#40c4ff", "#69f0ae", "#7c4dff"];
-    c.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+  // random shape: circle or square
+  c.style.borderRadius = Math.random() > 0.5 ? "50%" : "0%";
 
-    document.body.appendChild(c);
+  // random colors
+  const colors = ["#ff4fa1", "#ffd740", "#40c4ff", "#69f0ae", "#7c4dff"];
+  c.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
 
-    setTimeout(() => c.remove(), 5000);
-  }
+  document.body.appendChild(c);
+
+  // remove after falling
+  setTimeout(() => c.remove(), 5000);
 }
 </script>
 
