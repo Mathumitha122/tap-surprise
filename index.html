@@ -3,209 +3,187 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Birthday Surprise</title>
+<title>Birthday Surprise 🎁</title>
 
 <style>
     body {
+        margin: 0;
         font-family: "Poppins", sans-serif;
-        background: linear-gradient(135deg, #ffb4f6, #ffd7b5);
         text-align: center;
-        padding: 40px 20px;
+        background: linear-gradient(135deg, #ffb3da, #ffc8ec, #ffd6ef);
+        min-height: 100vh;
         overflow-x: hidden;
     }
 
-    h2 {
+    h1 {
+        margin-top: 40px;
         color: white;
-        font-size: 24px;
-        margin-bottom: 12px;
+        font-size: 32px;
+        font-weight: 700;
     }
 
     input {
-        padding: 12px;
         width: 80%;
-        border-radius: 12px;
+        max-width: 300px;
+        padding: 15px;
         border: none;
-        font-size: 16px;
+        border-radius: 20px;
+        margin-top: 15px;
+        font-size: 18px;
     }
 
     button {
-        margin-top: 15px;
-        padding: 12px 20px;
-        background: #ff4ecb;
-        color: white;
+        padding: 12px 30px;
         border: none;
-        border-radius: 12px;
-        font-size: 16px;
+        background: #ff2ea6;
+        color: white;
+        border-radius: 20px;
+        font-size: 18px;
+        margin-top: 20px;
         cursor: pointer;
+        transition: 0.2s;
     }
 
-    /* Envelope area */
-    #envelopeArea {
+    button:active {
+        transform: scale(0.95);
+    }
+
+    /* Envelope section */
+    #envelopeContainer {
         display: none;
-        margin-top: 50px;
+        justify-content: center;
+        align-items: center;
+        margin-top: 40px;
     }
 
-    .envelope-wrapper {
-        width: 220px;
-        height: 160px;
-        margin: auto;
+    .envelope {
+        width: 250px;
+        height: 180px;
+        background: #ff8ac9;
         position: relative;
+        border-radius: 10px;
         cursor: pointer;
+        transition: transform 0.5s ease;
     }
 
-    /* Envelope back */
-    .envelope-back {
-        width: 100%;
-        height: 100%;
-        background: #ff8ecf;
-        border-radius: 12px;
-        position: relative;
-        z-index: 1;
+    .envelope.open {
+        transform: translateY(-20px);
     }
 
-    /* Envelope flap */
-    .envelope-flap {
+    .flap {
         width: 100%;
-        height: 90px;
-        background: #ffb4e6;
-        border-radius: 12px 12px 0 0;
+        height: 80px;
+        background: #ffa9d6;
         position: absolute;
         top: 0;
-        left: 0;
+        border-radius: 10px 10px 0 0;
         transform-origin: top;
-        transform: rotateX(0deg);
-        transition: 0.6s ease;
-        z-index: 3;
+        transition: transform 0.6s ease;
     }
 
-    /* Heart seal */
-    .heart {
-        width: 30px;
-        height: 30px;
-        background: #ff2e81;
-        position: absolute;
-        top: 85px;
-        left: 50%;
-        transform: translateX(-50%) rotate(45deg);
-        border-radius: 6px;
-        z-index: 4;
-    }
-    .heart:before,
-    .heart:after {
-        content: "";
-        width: 30px;
-        height: 30px;
-        background: #ff2e81;
-        border-radius: 50%;
-        position: absolute;
-    }
-    .heart:before {
-        top: -15px;
-        left: 0;
-    }
-    .heart:after {
-        left: -15px;
-        top: 0;
+    .envelope.open .flap {
+        transform: rotateX(180deg);
     }
 
-    /* Letter */
     .letter {
         width: 85%;
+        height: 110px;
         background: white;
-        padding: 20px;
-        border-radius: 12px;
-        box-shadow: 0 0 15px rgba(0,0,0,0.15);
         position: absolute;
-        top: 60px;
-        left: 7.5%;
+        bottom: 10px;
+        left: 50%;
+        transform: translateX(-50%);
+        border-radius: 10px;
+        padding: 15px;
+        text-align: center;
+        font-size: 16px;
         opacity: 0;
-        transform: translateY(40px);
-        transition: 0.7s ease;
-        z-index: 0;
+        transition: opacity 0.6s ease 0.3s;
     }
 
-    .letter.show {
+    .envelope.open .letter {
         opacity: 1;
-        transform: translateY(-40px);
     }
 
-    .title {
-        font-size: 20px;
-        font-weight: bold;
-        color: #ff28b4;
-        margin-bottom: 10px;
+    /* Confetti */
+    .confetti {
+        position: fixed;
+        top: -10px;
+        width: 10px;
+        height: 10px;
+        background: randomColor;
+        animation: fall linear infinite;
+        opacity: 0.8;
     }
 
-    .msg {
-        font-size: 15px;
-        color: #333;
-        line-height: 1.6;
+    @keyframes fall {
+        to {
+            transform: translateY(120vh) rotate(360deg);
+        }
     }
 </style>
 </head>
 
 <body>
 
-<h2>Enter Secret Code 🎁</h2>
-<input id="codeInput" placeholder="Enter code…" />
+<h1>Enter Secret Code 🎁</h1>
+
+<input id="secretCode" placeholder="Enter code">
 <br>
-<button onclick="unlock()">Unlock</button>
+<button id="unlockBtn">Unlock</button>
 
-<div id="envelopeArea">
-    <div class="envelope-wrapper" onclick="openEnvelope()">
-
-        <div class="envelope-back"></div>
-
-        <div class="envelope-flap" id="flap"></div>
-
-        <div class="heart"></div>
-
-        <div class="letter" id="letter">
-            <div class="title">💖 Happy Birthday 💖</div>
-            <div class="msg">
-                Wishing you a day filled with love, joy, and magic ✨<br>
+<!-- Envelope -->
+<div id="envelopeContainer">
+    <div class="envelope" id="envelope">
+        <div class="flap"></div>
+        <div class="letter">
+            <p>
                 You deserve all the happiness in the world 💕<br>
                 Sending a warm birthday hug! 🎀
-            </div>
+            </p>
         </div>
     </div>
 </div>
 
-<!-- Confetti -->
-<script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
 
 <script>
-function unlock() {
-    if (document.getElementById("codeInput").value.trim() === "Ash25") {
-        document.getElementById("envelopeArea").style.display = "block";
+/* Confetti generator */
+function createConfetti() {
+    const confetti = document.createElement("div");
+    confetti.classList.add("confetti");
 
-        setInterval(() => {
-            confetti({
-                particleCount: 45,
-                spread: 70,
-                origin: { y: 0.1 }
-            });
-        }, 700);
+    const colors = ["#ff2ea6", "#ffa9d6", "#ff7ac8", "#ffcdf2", "#ffffff"];
+    confetti.style.background = colors[Math.floor(Math.random() * colors.length)];
 
+    confetti.style.left = Math.random() * window.innerWidth + "px";
+    confetti.style.animationDuration = 3 + Math.random() * 2 + "s";
+    confetti.style.opacity = Math.random();
+
+    document.body.appendChild(confetti);
+
+    setTimeout(() => confetti.remove(), 5000);
+}
+
+// continuous confetti
+setInterval(createConfetti, 150);
+
+
+/* Unlock + Show Envelope */
+document.getElementById("unlockBtn").addEventListener("click", () => {
+    const code = document.getElementById("secretCode").value;
+
+    if (code === "Ash25") {
+        document.getElementById("envelopeContainer").style.display = "flex";
+        window.scrollTo(0, 300);
     } else {
-        alert("Wrong code ❌ Try again!");
+        alert("Wrong code 😜");
     }
-}
+});
 
-let opened = false;
-
-function openEnvelope() {
-    if (opened) return;
-    opened = true;
-
-    // Open flap
-    document.getElementById("flap").style.transform = "rotateX( -140deg )";
-
-    // Letter slide out
-    setTimeout(() => {
-        document.getElementById("letter").classList.add("show");
-    }, 500);
-}
+/* Envelope open animation */
+document.getElementById("envelope").addEventListener("click", () => {
+    document.getElementById("envelope").classList.toggle("open");
+});
 </script>
 
 </body>
