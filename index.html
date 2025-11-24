@@ -15,18 +15,17 @@
     }
 
     h2 {
-        color: #fff;
-        font-size: 22px;
+        color: white;
+        font-size: 24px;
+        margin-bottom: 12px;
     }
 
     input {
         padding: 12px;
         width: 80%;
-        max-width: 260px;
-        border-radius: 10px;
+        border-radius: 12px;
         border: none;
         font-size: 16px;
-        outline: none;
     }
 
     button {
@@ -40,69 +39,107 @@
         cursor: pointer;
     }
 
-    /* Envelope Section */
+    /* Envelope area */
     #envelopeArea {
         display: none;
-        margin-top: 40px;
+        margin-top: 50px;
     }
 
-    .envelope {
-        width: 180px;
-        height: 120px;
-        background: #ff8ed6;
+    .envelope-wrapper {
+        width: 220px;
+        height: 160px;
         margin: auto;
         position: relative;
-        border-radius: 10px;
         cursor: pointer;
     }
 
-    /* Envelope Flap */
-    .flap {
-        width: 180px;
+    /* Envelope back */
+    .envelope-back {
+        width: 100%;
+        height: 100%;
+        background: #ff8ecf;
+        border-radius: 12px;
+        position: relative;
+        z-index: 1;
+    }
+
+    /* Envelope flap */
+    .envelope-flap {
+        width: 100%;
         height: 90px;
-        background: #ffb0e8;
+        background: #ffb4e6;
+        border-radius: 12px 12px 0 0;
         position: absolute;
-        top: -80px;
+        top: 0;
         left: 0;
-        border-radius: 10px 10px 0 0;
-        transform-origin: bottom;
+        transform-origin: top;
         transform: rotateX(0deg);
         transition: 0.6s ease;
         z-index: 3;
     }
 
+    /* Heart seal */
+    .heart {
+        width: 30px;
+        height: 30px;
+        background: #ff2e81;
+        position: absolute;
+        top: 85px;
+        left: 50%;
+        transform: translateX(-50%) rotate(45deg);
+        border-radius: 6px;
+        z-index: 4;
+    }
+    .heart:before,
+    .heart:after {
+        content: "";
+        width: 30px;
+        height: 30px;
+        background: #ff2e81;
+        border-radius: 50%;
+        position: absolute;
+    }
+    .heart:before {
+        top: -15px;
+        left: 0;
+    }
+    .heart:after {
+        left: -15px;
+        top: 0;
+    }
+
     /* Letter */
     .letter {
-        width: 160px;
+        width: 85%;
         background: white;
-        padding: 15px;
-        border-radius: 10px;
+        padding: 20px;
+        border-radius: 12px;
         box-shadow: 0 0 15px rgba(0,0,0,0.15);
         position: absolute;
-        top: 20px;
-        left: 10px;
+        top: 60px;
+        left: 7.5%;
         opacity: 0;
-        transform: translateY(30px);
+        transform: translateY(40px);
         transition: 0.7s ease;
-        z-index: 1;
+        z-index: 0;
     }
 
     .letter.show {
         opacity: 1;
-        transform: translateY(-60px);
+        transform: translateY(-40px);
     }
 
     .title {
         font-size: 20px;
         font-weight: bold;
         color: #ff28b4;
-        margin-bottom: 8px;
+        margin-bottom: 10px;
     }
 
     .msg {
         font-size: 15px;
-        color: #444;
-        line-height: 1.5;
+        color: #333;
+        line-height: 1.6;
     }
 </style>
 </head>
@@ -111,16 +148,22 @@
 
 <h2>Enter Secret Code 🎁</h2>
 <input id="codeInput" placeholder="Enter code…" />
+<br>
 <button onclick="unlock()">Unlock</button>
 
 <div id="envelopeArea">
-    <div class="envelope" onclick="openEnvelope()">
-        <div class="flap" id="flap"></div>
+    <div class="envelope-wrapper" onclick="openEnvelope()">
+
+        <div class="envelope-back"></div>
+
+        <div class="envelope-flap" id="flap"></div>
+
+        <div class="heart"></div>
 
         <div class="letter" id="letter">
-            <div class="title">💌 Happy Birthday 💌</div>
+            <div class="title">💖 Happy Birthday 💖</div>
             <div class="msg">
-                May your day be filled with magic, love and joy ✨<br>
+                Wishing you a day filled with love, joy, and magic ✨<br>
                 You deserve all the happiness in the world 💕<br>
                 Sending a warm birthday hug! 🎀
             </div>
@@ -133,22 +176,19 @@
 
 <script>
 function unlock() {
-    let val = document.getElementById("codeInput").value.trim();
-    if (val === "Ash25") {
+    if (document.getElementById("codeInput").value.trim() === "Ash25") {
         document.getElementById("envelopeArea").style.display = "block";
 
-        // continuous confetti
         setInterval(() => {
             confetti({
                 particleCount: 45,
                 spread: 70,
-                gravity: 0.7,
                 origin: { y: 0.1 }
             });
         }, 700);
 
     } else {
-        alert("Incorrect code ❌ Try again!");
+        alert("Wrong code ❌ Try again!");
     }
 }
 
@@ -158,13 +198,13 @@ function openEnvelope() {
     if (opened) return;
     opened = true;
 
-    // open flap
-    document.getElementById("flap").style.transform = "rotateX(-130deg)";
+    // Open flap
+    document.getElementById("flap").style.transform = "rotateX( -140deg )";
 
-    // slide out letter
+    // Letter slide out
     setTimeout(() => {
         document.getElementById("letter").classList.add("show");
-    }, 400);
+    }, 500);
 }
 </script>
 
