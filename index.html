@@ -1,0 +1,218 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Secret Birthday Unlock</title>
+<style>
+  :root{
+    --bg:#0b1220;
+    --panel:#0f1724;
+    --accent: #ff6b81;
+    --text: #f7fbff;
+  }
+  html,body{height:100%;margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto}
+  body{
+    background:linear-gradient(180deg,var(--bg),#081021 90%);
+    color:var(--text);
+    display:flex;align-items:center;justify-content:center;padding:18px;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .card{
+    width:100%;max-width:740px;height:90vh;background:linear-gradient(180deg,var(--panel),#0b1220);
+    border-radius:16px;box-shadow:0 20px 40px rgba(4,6,12,0.6);position:relative;overflow:hidden;
+    display:flex;flex-direction:column;align-items:center;justify-content:center;padding:18px;
+  }
+  h1{margin:6px 0 14px;font-size:20px;text-align:center}
+  p.hint{margin:0 0 16px;color:#b9c0d6;text-align:center}
+  #msg{opacity:0;transform:translateY(14px);transition:all .6s cubic-bezier(.2,.95,.2,1);text-align:center}
+  #msg.show{opacity:1;transform:translateY(0)}
+  #msg h2{margin:6px 0;font-size:28px;letter-spacing:0.6px}
+  #msg p{margin:6px 0 0;color:#e6edf8}
+  .revealBtn{
+    margin-top:16px;background:transparent;border:1px solid rgba(255,255,255,0.06);
+    color:var(--text);padding:10px 16px;border-radius:10px;font-size:15px;
+    box-shadow:inset 0 -2px 0 rgba(0,0,0,0.2);
+  }
+  /* Invisible tap zones */
+  .zone{position:absolute;z-index:5}
+  #top{top:0;left:0;width:100%;height:22%}
+  #bottom{bottom:0;left:0;width:100%;height:22%}
+  #left{top:22%;left:0;width:28%;height:56%}
+  #right{top:22%;right:0;width:28%;height:56%}
+  #center{top:22%;left:28%;width:44%;height:56%}
+  /* small helper visual for testing (optional: hide by default) */
+  .debugZones{position:absolute;inset:0;opacity:0;pointer-events:none}
+  canvas{position:absolute;inset:0;z-index:7;pointer-events:none}
+  footer{position:absolute;bottom:12px;left:0;right:0;text-align:center;color:#95a1c3;font-size:12px;z-index:6}
+</style>
+</head>
+<body>
+  <div class="card" id="card">
+    <h1>Find the secret tap pattern 🔐</h1>
+    <p class="hint">Tap the screen in the right order to unlock the surprise.</p>
+
+    <div id="msg" aria-live="polite">
+      <h2 id="title">🎉 HAPPY BIRTHDAY! 🎉</h2>
+      <p id="subtitle">You unlocked the secret message — celebrate and enjoy your special day!</p>
+      <button class="revealBtn" id="again">Play Again</button>
+    </div>
+
+    <!-- Tap zones (invisible to user) -->
+    <div id="top" class="zone"></div>
+    <div id="bottom" class="zone"></div>
+    <div id="left" class="zone"></div>
+    <div id="right" class="zone"></div>
+    <div id="center" class="zone"></div>
+
+    <!-- Canvas for confetti -->
+    <canvas id="c"></canvas>
+
+    <footer>Tip: Ask them to keep phone unlocked and hold it naturally.</footer>
+  </div>
+
+<script>
+/*
+  Simple Tap-Pattern Unlock + Confetti
+  - Change secret pattern below if you want a different code.
+  - Works with taps and touches on mobile.
+*/
+
+// ----- EDITABLE: secret pattern and message -----
+const secret = ["up","up","down","down","left","right","center"]; // simple pattern
+const successTitle = "🎉 HAPPY BIRTHDAY, YOU LEGEND! 🎉";
+const successSubtitle = "That secret tap pattern was for you — enjoy every moment!";
+// ------------------------------------------------
+
+const zones = {
+  top: document.getElementById('top'),
+  bottom: document.getElementById('bottom'),
+  left: document.getElementById('left'),
+  right: document.getElementById('right'),
+  center: document.getElementById('center')
+};
+
+let input = [];
+
+function pushInput(dir){
+  input.push(dir);
+  // keep only last N inputs
+  if(input.length > secret.length) input.shift();
+  checkSecret();
+}
+
+// check match
+function checkSecret(){
+  if(input.length < secret.length) return;
+  if(input.join(',') === secret.join(',')){
+    unlock();
+  }
+}
+
+// unlock action
+let unlocked = false;
+function unlock(){
+  if(unlocked) return;
+  unlocked = true;
+  // show message text
+  document.getElementById('title').textContent = successTitle;
+  document.getElementById('subtitle').textContent = successSubtitle;
+  document.getElementById('msg').classList.add('show');
+
+  // launch confetti
+  runConfetti();
+
+  // vibrate pattern feedback if available
+  if(navigator.vibrate) navigator.vibrate([80,40,80,40,140]);
+}
+
+// allow play again
+document.getElementById('again').addEventListener('click', ()=>{
+  unlocked = false;
+  input = [];
+  document.getElementById('msg').classList.remove('show');
+});
+
+// attach touch/click handlers
+Object.entries(zones).forEach(([name, el])=>{
+  const handler = (ev) => {
+    ev.preventDefault();
+    if(unlocked) return;
+    pushInput(name);
+    // small tapped visual feedback (vibrate)
+    if(navigator.vibrate) navigator.vibrate(30);
+  };
+  el.addEventListener('touchstart', handler, {passive:false});
+  el.addEventListener('mousedown', handler);
+});
+
+// ----------------- Simple confetti -----------------
+const canvas = document.getElementById('c');
+const ctx = canvas.getContext('2d');
+let W = canvas.width = window.innerWidth;
+let H = canvas.height = window.innerHeight;
+window.addEventListener('resize', ()=>{
+  W = canvas.width = window.innerWidth;
+  H = canvas.height = window.innerHeight;
+});
+
+function random(min,max){ return Math.random()*(max-min)+min; }
+
+function Confetto(){
+  this.x = random(0, W);
+  this.y = random(-40, -10);
+  this.size = random(6, 12);
+  this.gravity = random(0.5, 1.25);
+  this.rotation = random(0, 360);
+  this.rotationSpeed = random(-8,8);
+  this.color = `hsl(${~~random(0,360)}, 75%, 60%)`;
+  this.vx = random(-2.5,2.5);
+  this.vy = random(1,3);
+}
+Confetto.prototype.update = function(){
+  this.vy += this.gravity*0.02;
+  this.x += this.vx;
+  this.y += this.vy;
+  this.rotation += this.rotationSpeed;
+};
+Confetto.prototype.draw = function(){
+  ctx.save();
+  ctx.translate(this.x, this.y);
+  ctx.rotate(this.rotation * Math.PI / 180);
+  ctx.fillStyle = this.color;
+  ctx.fillRect(-this.size/2, -this.size/2, this.size, this.size*0.6);
+  ctx.restore();
+};
+
+let confetti = [];
+let confettiInterval;
+
+function spawnConfetti(count=60){
+  for(let i=0;i<count;i++) confetti.push(new Confetto());
+}
+
+function runConfetti(){
+  spawnConfetti(80);
+  // run for a while then stop spawning
+  if(confettiInterval) clearInterval(confettiInterval);
+  confettiInterval = setInterval(()=>spawnConfetti(30), 300);
+  // stop after 4s
+  setTimeout(()=>clearInterval(confettiInterval), 2300);
+}
+
+// animation loop
+function animate(){
+  ctx.clearRect(0,0,W,H);
+  for(let i=confetti.length-1;i>=0;i--){
+    const c = confetti[i];
+    c.update();
+    c.draw();
+    if(c.y > H + 40 || c.x < -40 || c.x > W + 40) confetti.splice(i,1);
+  }
+  requestAnimationFrame(animate);
+}
+animate();
+// --------------------------------------------------
+</script>
+</body>
+</html>
