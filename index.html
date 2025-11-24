@@ -10,187 +10,146 @@
 
 <style>
   :root{
-    --bg1: #ffefe9;
-    --bg2: #e6f7ff;
+    --bg1: #ffe9f0;
+    --bg2: #e9f4ff;
     --accent: #ff4fa1;
-    --muted: #475569;
   }
-  html,body{height:100%;margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto; -webkit-font-smoothing:antialiased}
   body{
-    display:flex;align-items:center;justify-content:center;
+    margin:0;
+    font-family:system-ui;
     background:linear-gradient(135deg,var(--bg1),var(--bg2));
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    height:100vh;
     padding:18px;
+    overflow:hidden;
   }
   .card{
-    width:100%;max-width:760px;background:linear-gradient(180deg,#ffffffcc,#ffffff);border-radius:16px;padding:20px;
-    box-shadow:0 18px 40px rgba(20,30,60,0.12);text-align:center;
+    width:100%;
+    max-width:700px;
+    background:#ffffffdd;
+    backdrop-filter:blur(6px);
+    padding:22px;
+    border-radius:18px;
+    text-align:center;
+    box-shadow:0 20px 40px rgba(0,0,0,0.15);
   }
-  h1{margin:6px 0 8px;font-size:20px;color:#0f1724}
-  p.lead{margin:0 0 14px;color:var(--muted)}
-  input[type="text"]{
-    width:86%;max-width:420px;padding:12px 14px;border-radius:10px;border:1px solid #e6e9ef;font-size:17px;
-    outline:none;box-shadow:inset 0 -2px 0 rgba(0,0,0,0.03);
+  h1{margin:0 0 6px;font-size:22px;color:#1b2330}
+  .lead{margin:0 0 14px;color:#4a5463}
+  input{
+    width:88%;max-width:380px;
+    padding:12px;
+    border-radius:10px;
+    border:1px solid #d3d8e0;
+    font-size:17px;
+    outline:none;
   }
-  button.primary{
-    margin-top:12px;padding:12px 18px;border-radius:12px;border:0;background:linear-gradient(90deg,var(--accent),#7c4dff);
-    color:white;font-weight:600;font-size:16px;box-shadow:0 8px 20px rgba(124,77,255,0.18);
+  button{
+    margin-top:14px;
+    padding:12px 18px;
+    border-radius:12px;
+    border:0;
+    font-size:16px;
+    font-weight:600;
+    cursor:pointer;
   }
-  button.secondary{
-    margin-top:12px;padding:10px 14px;border-radius:10px;border:0;background:#fff;font-weight:600;font-size:15px;color:#374151;
-    box-shadow:0 6px 14px rgba(0,0,0,0.06);
-  }
-  #msg{margin-top:20px;opacity:0;transform:translateY(6px);transition:all .5s ease;text-align:center}
-  #msg.show{opacity:1;transform:translateY(0)}
-  #msg h2{margin:6px 0 4px;font-size:26px}
-  #msg p{margin:0;color:#334155}
-
-  /* full-screen confetti canvas */
-  #confetti-canvas{position:fixed;left:0;top:0;pointer-events:none;width:100%;height:100%;z-index:9999}
-  footer{margin-top:16px;color:#94a3b8;font-size:13px}
-  @media (max-width:420px){
-    input[type="text"]{width:100%}
-  }
+  .primary{background:linear-gradient(90deg,#ff4fa1,#7c4dff);color:#fff;}
+  .secondary{background:#ffffff;color:#444;box-shadow:0 4px 14px rgba(0,0,0,0.1);}
+  #msg{opacity:0;transform:translateY(10px);transition:.5s;margin-top:18px;}
+  #msg.show{opacity:1;transform:translateY(0);}
+  #confetti-canvas{position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:999;}
 </style>
 </head>
+
 <body>
-  <div class="card" role="main" aria-labelledby="title">
-    <h1 id="title">A secret surprise — enter the code</h1>
-    <p class="lead">Type the secret code and tap <strong>Unlock</strong>. Hold phone naturally.</p>
+<canvas id="confetti-canvas"></canvas>
 
-    <input id="codeInput" type="text" inputmode="text" autocomplete="off" placeholder="Enter secret code (e.g. Ash25)">
-    <br>
-    <button class="primary" id="unlockBtn">Unlock</button>
+<div class="card">
+  <h1>🔒 Enter the Secret Code</h1>
+  <p class="lead">Type the code & tap Unlock</p>
 
-    <div id="msg" aria-live="polite" role="status">
-      <h2 id="msgTitle">🎉 HAPPY BIRTHDAY — Ash! 🎉</h2>
-      <p id="msgBody">Wishing you a day filled with love, laughter and all your favourite things.</p>
-      <div style="margin-top:12px">
-        <button id="playBtn" class="secondary" style="display:none">🎵 Tap to play song</button>
-      </div>
-    </div>
+  <input id="codeInput" placeholder="Enter secret code (Ash25)">
+  <br>
+  <button class="primary" id="unlockBtn">Unlock</button>
 
-    <footer>Secret code: <strong>Ash25</strong> (you provided this)</footer>
+  <div id="msg">
+    <h2>🎉 HAPPY BIRTHDAY, ASH! 🎉</h2>
+    <p>Wishing you joy, love and all your favourite moments today. 💖✨</p>
+    <button id="playBtn" class="secondary" style="display:none;margin-top:18px;">🎵 Tap to play music</button>
   </div>
-
-  <!-- confetti canvas -->
-  <canvas id="confetti-canvas"></canvas>
+</div>
 
 <script>
-/* -------- CONFIG -------- */
-const SECRET = "Ash25"; // exact match (case-sensitive). Change if you want case-insensitive.
-/* ------------------------ */
+/* CONFIG */
+const SECRET = "Ash25";
+const AUDIO_URL = "https://raw.githubusercontent.com/Mathumitha122/Music/main/happy-birthday-334876.mp3";
 
-const unlockBtn = document.getElementById('unlockBtn');
-const codeInput = document.getElementById('codeInput');
-const msg = document.getElementById('msg');
-const msgTitle = document.getElementById('msgTitle');
-const msgBody = document.getElementById('msgBody');
-const playBtn = document.getElementById('playBtn');
-
-const canvas = document.getElementById('confetti-canvas');
-canvas.width = window.innerWidth;
-canvas.height = window.innerHeight;
-
-window.addEventListener('resize', ()=> {
-  canvas.width = window.innerWidth;
-  canvas.height = window.innerHeight;
+/* Confetti canvas */
+const canvas = document.getElementById("confetti-canvas");
+canvas.width = innerWidth;
+canvas.height = innerHeight;
+addEventListener("resize", () => {
+  canvas.width = innerWidth;
+  canvas.height = innerHeight;
 });
 
-// create Audio when needed (after gesture)
-let music = null;
-const AUDIO_URL = "https://docs.google.com/uc?export=download&id=1b_vxT_4l4fxdTXSQQW4mxh3mfIDky7RT";
-
-/* -------- Canvas-Confetti wrapper using CDN library -------- */
-function fireRandomBurst(){
-  // random origin to spread confetti well across screen
+/* Continuous confetti */
+function burst(){
   confetti({
     particleCount: 30,
-    startVelocity: 25,
     spread: 60,
-    ticks: 120,
     origin: { x: Math.random(), y: Math.random() * 0.3 }
   });
 }
-
-let confettiInterval = null;
-function startContinuousConfetti(){
-  if(confettiInterval) return;
-  // initial burst
-  fireRandomBurst();
-  // continuous small bursts
-  confettiInterval = setInterval(fireRandomBurst, 300); // every 300ms
-}
-function stopContinuousConfetti(){
-  if(confettiInterval){ clearInterval(confettiInterval); confettiInterval = null; }
+let confettiLoop=null;
+function startConfetti(){
+  burst();
+  confettiLoop = setInterval(burst, 300);
 }
 
-/* -------- Unlock logic -------- */
-unlockBtn.addEventListener('click', async () => {
+/* Message + audio logic */
+const unlockBtn = document.getElementById("unlockBtn");
+const codeInput = document.getElementById("codeInput");
+const msg = document.getElementById("msg");
+const playBtn = document.getElementById("playBtn");
+
+let music = null;
+
+unlockBtn.onclick = () => {
   const val = codeInput.value.trim();
-  if(!val){
-    alert("Please enter the secret code.");
+  if(val !== SECRET){
+    alert("Wrong code!");
+    navigator.vibrate?.(60);
     return;
   }
 
-  // check code exactly (case-sensitive). If you want case-insensitive:
-  // if(val.toLowerCase() === SECRET.toLowerCase())
-  if(val === SECRET){
-    // reveal message and start confetti
-    msg.classList.add('show');
-    startContinuousConfetti();
+  msg.classList.add("show");
+  startConfetti();
+  navigator.vibrate?.(40);
 
-    // create Audio object now (in user gesture)
-    if(!music){
-      try{
-        music = new Audio(AUDIO_URL);
-        music.loop = false;
-      }catch(e){
-        console.warn("Audio creation failed", e);
-      }
-    }
+  // create audio object inside user gesture
+  music = new Audio(AUDIO_URL);
+  music.loop = false;
 
-    // attempt to play immediately (this click is a user gesture)
-    if(music){
-      music.play().then(()=> {
-        // success: hide play button if visible
-        playBtn.style.display = 'none';
-      }).catch(()=> {
-        // blocked — show "Tap to play" button for user to allow sound
-        playBtn.style.display = 'inline-block';
-      });
-    } else {
-      // if audio couldn't be created, show play button as fallback
-      playBtn.style.display = 'inline-block';
-    }
-
-    // small haptic feedback if supported (mobile)
-    if(navigator.vibrate) navigator.vibrate(60);
-    // optionally disable the unlock button to prevent re-trigger
-    unlockBtn.disabled = true;
-    unlockBtn.style.opacity = 0.6;
-    codeInput.disabled = true;
-  } else {
-    // wrong code feedback
-    alert("Wrong code — try again!");
-    // small shake/vibrate
-    if(navigator.vibrate) navigator.vibrate([40,20,40]);
-  }
-});
-
-// Play button fallback (single tap will start audio)
-playBtn.addEventListener('click', ()=>{
-  if(!music) music = new Audio(AUDIO_URL);
-  music.play().catch(()=> {
-    alert("Audio blocked — try tapping anywhere on the screen once and then press this button again.");
+  // try autoplay
+  music.play()
+  .then(()=>{
+    playBtn.style.display = "none";
+  })
+  .catch(()=>{
+    playBtn.style.display = "inline-block"; // fallback for iPhone
   });
-});
 
-/* Optional: allow Enter key to submit on virtual keyboard */
-codeInput.addEventListener('keydown', (e)=>{
-  if(e.key === 'Enter'){
-    unlockBtn.click();
-  }
-});
+  unlockBtn.disabled = true;
+  codeInput.disabled = true;
+};
+
+/* Fallback play button */
+playBtn.onclick = () => {
+  if(music) music.play();
+};
 </script>
+
 </body>
 </html>
